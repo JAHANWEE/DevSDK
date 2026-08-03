@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>devsdk-core | Lean & Reliable Agent Framework</title>
+  <meta name="description" content="A lean, reliable TypeScript framework for building LLM agents. Built for production." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  
+  <nav id="navbar">
+    <a href="index.html" class="logo">devsdk<span>-core</span></a>
+    <div class="nav-links">
+      <a href="docs.html" class="nav-link">Documentation</a>
+      <a href="https://github.com" target="_blank" class="nav-link">GitHub</a>
+      <a href="docs.html" class="nav-link nav-btn">Get Started</a>
+    </div>
+  </nav>
+
+  <div class="hero-glow"></div>
+  <div class="hero-grid"></div>
+
+  <section class="hero">
+    <div class="tag">
+      <div class="tag-dot"></div>
+      v1.0.0 is Live
+    </div>
+    <h1>Build agents that <span>actually work.</span></h1>
+    <p class="subtitle">
+      A lean, reliable TypeScript framework for building LLM agents. Features native swarms, strict JSON outputs, tool approvals, and automatic retries out of the box.
+    </p>
+    
+    <div class="install-block">
+      <span class="cmd">$</span>
+      <span class="pkg">npm install devsdk-core</span>
+      <button class="copy-btn" onclick="copyInstallCmd(this)">Copy</button>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="card">
+      <h3>Multi-Agent Swarms</h3>
+      <p>Seamlessly transfer context between specialized agents. Throw a HandoffError and the Swarm orchestrator handles the rest—with strict loop prevention.</p>
+    </div>
+    <div class="card">
+      <h3>Strict Tool Guardrails</h3>
+      <p>Need a human in the loop? Set <code>requiresApproval: true</code> on any tool, and block execution until explicitly approved.</p>
+    </div>
+    <div class="card">
+      <h3>Reliable by Default</h3>
+      <p>Stop writing boilerplate for timeouts and rate limits. devsdk-core includes built-in exponential backoff and timeout handling for all LLM calls.</p>
+    </div>
+    <div class="card">
+      <h3>Structured Outputs</h3>
+      <p>Define Zod schemas and enforce strict JSON responses natively. We handle the <code>zodResponseFormat</code> conversion under the hood.</p>
+    </div>
+  </section>
+
+  <footer>
+    made with love by <span>Jaani</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

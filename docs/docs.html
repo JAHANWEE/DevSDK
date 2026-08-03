@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Documentation | devsdk-core</title>
+  <meta name="description" content="Documentation for devsdk-core." />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  
+  <nav id="navbar">
+    <a href="index.html" class="logo">devsdk<span>-core</span></a>
+    <div class="nav-links">
+      <a href="docs.html" class="nav-link">Documentation</a>
+      <a href="https://github.com" target="_blank" class="nav-link">GitHub</a>
+    </div>
+  </nav>
+
+  <div class="docs-layout">
+    <aside class="sidebar">
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Getting Started</div>
+        <a href="#installation" class="active">Installation</a>
+        <a href="#quick-start">Quick Start</a>
+      </div>
+      <div class="sidebar-group">
+        <div class="sidebar-group-title">Core Features</div>
+        <a href="#tools">Tools</a>
+        <a href="#swarms-handoffs">Swarms & Handoffs</a>
+        <a href="#guardrails">Guardrails & Approvals</a>
+        <a href="#memory-sessions">Memory & Sessions</a>
+        <a href="#structured-outputs">Structured Outputs</a>
+        <a href="#streaming-tracing">Streaming & Tracing</a>
+        <a href="#error-handling">Error Handling</a>
+      </div>
+    </aside>
+
+    <main class="docs-content">
+      <h1>Documentation</h1>
+
+      <section id="installation">
+        <h2>Installation</h2>
+        <p>devsdk-core requires Node.js 18+ and TypeScript 5.0+.</p>
+        <pre><code>npm install devsdk-core openai zod</code></pre>
+      </section>
+
+      <section id="quick-start">
+        <h2>Quick Start</h2>
+        <p>Create an agent and execute a task in a few lines of code.</p>
+        <pre><code>import { Agent, OpenAIProvider } from "devsdk-core";
+
+const provider = new OpenAIProvider({ apiKey: process.env.OPENAI_API_KEY });
+
+const agent = new Agent({
+  name: "HelperBot",
+  instructions: "You are a helpful assistant.",
+  provider
+});
+
+async function main() {
+  const result = await agent.run("Say hello!");
+  console.log(result);
+}
+main();</code></pre>
+      </section>
+
+      <section id="tools">
+        <h2>Tools</h2>
+        <p>Tools allow your agents to interact with the outside world. We use Zod to strictly validate tool arguments.</p>
+        <pre><code>import { createTool } from "devsdk-core";
+import { z } from "zod";
+
+const getWeather = createTool(
+  "get_weather",
+  "Get the current weather",
+  z.object({ location: z.string() }),
+  async ({ location }) => ({ temp: 72, condition: "Sunny", location })
+);</code></pre>
+      </section>
+
+      <section id="swarms-handoffs">
+        <h2>Swarms & Handoffs</h2>
+        <p>Build multi-agent swarms by allowing agents to transfer context to each other using <code>HandoffError</code>.</p>
+        <pre><code>import { Swarm, HandoffError } from "devsdk-core";
+
+const escalateTool = createTool(
+  "escalate", 
+  "Transfer to support", 
+  z.object({ reason: z.string() }),
+  async ({ reason }) => { throw new HandoffError(supportAgentConfig, reason); }
+);
+
+const swarm = new Swarm(triageAgent, 3); // Max 3 handoffs to prevent loops
+await swarm.run("My computer is broken!");</code></pre>
+      </section>
+
+      <section id="guardrails">
+        <h2>Guardrails & Approvals</h2>
+        <p>Implement human-in-the-loop approvals for dangerous tools by setting <code>requiresApproval: true</code> on your Tool, and providing an <code>approveTool</code> callback.</p>
+        <pre><code>const agent = new Agent({
+  // ...
+  approveTool: async (toolName, args) => {
+    console.log(`Approve execution of ${toolName}?`, args);
+    return true; // Return false to throw an ApprovalError
+  }
+});</code></pre>
+      </section>
+
+      <section id="memory-sessions">
+        <h2>Memory & Sessions</h2>
+        <p>Persist conversation history natively using the provided memory adapters.</p>
+        <pre><code>import { FileAdapter, InMemoryAdapter } from "devsdk-core";
+
+// Persists to a local JSON file
+const memory = new FileAdapter("./memory.json");
+const agent = new Agent({ provider, memory });</code></pre>
+      </section>
+
+      <section id="structured-outputs">
+        <h2>Structured Outputs</h2>
+        <p>Force the LLM to return valid JSON matching your schema.</p>
+        <pre><code>const agent = new Agent({
+  // ...
+  responseSchema: z.object({ 
+    summary: z.string(),
+    sentiment: z.enum(["positive", "negative"])
+  })
+});
+// result will be guaranteed to parse as the schema above.</code></pre>
+      </section>
+
+      <section id="streaming-tracing">
+        <h2>Streaming & Tracing</h2>
+        <p>Subscribe to granular events to trace execution, stream text, and log tool usage.</p>
+        <pre><code>agent.onEvent((event) => {
+  if (event.type === "tool_started") {
+    console.log(`Running: ${event.data.tool}`);
+  }
+});</code></pre>
+      </section>
+
+      <section id="error-handling">
+        <h2>Error Handling & Reliability</h2>
+        <p>devsdk-core automatically handles timeouts and exponential backoff retries.</p>
+        <pre><code>const agent = new Agent({
+  // ...
+  maxRetries: 3,
+  timeoutMs: 15000 // 15 seconds
+});</code></pre>
+      </section>
+      
+    </main>
+  </div>
+
+  <footer>
+    made with love by <span>Jaani</span>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
