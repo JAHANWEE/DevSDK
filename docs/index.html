@@ -9,32 +9,39 @@
 </head>
 <body>
   
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
   <nav id="navbar">
-    <a href="index.html" class="logo">devsdk<span>-core</span></a>
+    <a href="index.html" class="logo">devsdk-core</a>
     <div class="nav-links">
       <a href="docs.html" class="nav-link">Documentation</a>
-      <a href="https://github.com" target="_blank" class="nav-link">GitHub</a>
+      <a href="https://github.com/JAHANWEE/DevSDK" target="_blank" class="nav-link">GitHub</a>
       <a href="docs.html" class="nav-link nav-btn">Get Started</a>
     </div>
   </nav>
 
-  <div class="hero-glow"></div>
-  <div class="hero-grid"></div>
-
   <section class="hero">
-    <div class="tag">
-      <div class="tag-dot"></div>
-      v1.0.0 is Live
-    </div>
-    <h1>Build agents that <span>actually work.</span></h1>
+    <h1>Write agents, not <span>graph routers.</span></h1>
     <p class="subtitle">
-      A lean, reliable TypeScript framework for building LLM agents. Features native swarms, strict JSON outputs, tool approvals, and automatic retries out of the box.
+      A transparent TypeScript SDK for AI swarms. Enforce strict Zod schemas, orchestrate multi-agent handoffs, and natively recover from failures—without the framework magic.
     </p>
     
     <div class="install-block">
       <span class="cmd">$</span>
       <span class="pkg">npm install devsdk-core</span>
       <button class="copy-btn" onclick="copyInstallCmd(this)">Copy</button>
+    </div>
+
+    <div class="hero-code" style="margin-top: 48px; text-align: left; max-width: 600px; width: 100%; transform: rotate(-1deg); transition: transform 0.3s;" onmouseover="this.style.transform='rotate(0deg) scale(1.02)'" onmouseout="this.style.transform='rotate(-1deg)'">
+      <pre style="margin: 0; box-shadow: 0 20px 60px rgba(0,0,0,0.2); border-radius: 24px; padding: 24px; background: var(--bg-surface);"><code>import { Agent } from "devsdk-core";
+
+const agent = new Agent({
+  name: "HelperBot",
+  instructions: "You are a helpful assistant."
+});
+
+await agent.run("Hello world!");</code></pre>
     </div>
   </section>
 
@@ -58,7 +65,7 @@
   </section>
 
   <footer>
-    made with love by <span>Jaani</span>
+    made with love ❤️ <span>Jaani</span>
   </footer>
 
   <script src="script.js"></script>
