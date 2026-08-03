@@ -19,4 +19,6 @@ __exportStar(require("./agent"), exports);
 __exportStar(require("./tools"), exports);
 __exportStar(require("./guardrails"), exports);
 __exportStar(require("./memory/InMemoryAdapter"), exports);
+__exportStar(require("./memory/FileAdapter"), exports);
 __exportStar(require("./providers/OpenAIProvider"), exports);
+__exportStar(require("./swarm"), exports);

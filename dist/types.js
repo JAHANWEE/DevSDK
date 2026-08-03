@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.HandoffError = void 0;
+exports.ApprovalError = exports.HandoffError = void 0;
 class HandoffError extends Error {
     handoffAgent;
     context;
@@ -12,3 +12,10 @@ class HandoffError extends Error {
     }
 }
 exports.HandoffError = HandoffError;
+class ApprovalError extends Error {
+    constructor(toolName) {
+        super(`Execution of tool '${toolName}' was denied.`);
+        this.name = "ApprovalError";
+    }
+}
+exports.ApprovalError = ApprovalError;

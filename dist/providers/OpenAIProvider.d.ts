@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { ModelProvider, Message, Tool } from "../types";
 export declare class OpenAIProvider implements ModelProvider {
     name: string;
@@ -7,5 +8,5 @@ export declare class OpenAIProvider implements ModelProvider {
         apiKey?: string;
         model?: string;
     });
-    generate(messages: Message[], tools?: Tool[]): Promise<Message>;
+    generate(messages: Message[], tools?: Tool[], responseSchema?: z.ZodType<any>): Promise<Message>;
 }

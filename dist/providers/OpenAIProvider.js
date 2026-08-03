@@ -14,7 +14,7 @@ class OpenAIProvider {
         this.client = new openai_1.default({ apiKey: options.apiKey || process.env.OPENAI_API_KEY });
         this.model = options.model || "gpt-4o-mini";
     }
-    async generate(messages, tools) {
+    async generate(messages, tools, responseSchema) {
         const formattedMessages = messages.map(msg => {
             if (msg.role === "tool") {
                 return {
@@ -52,6 +52,7 @@ class OpenAIProvider {
             model: this.model,
             messages: formattedMessages,
             tools: openaiTools?.length ? openaiTools : undefined,
+            response_format: responseSchema ? (0, zod_1.zodResponseFormat)(responseSchema, "final_answer") : undefined,
         });
         const choice = response.choices[0];
         const message = choice.message;

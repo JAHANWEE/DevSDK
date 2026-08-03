@@ -19,11 +19,12 @@ export interface Tool<T = any> {
     name: string;
     description: string;
     schema: z.ZodType<T>;
+    requiresApproval?: boolean;
     execute: (args: T) => Promise<string | Record<string, any>> | string | Record<string, any>;
 }
 export interface ModelProvider {
     name: string;
-    generate(messages: Message[], tools?: Tool[]): Promise<Message>;
+    generate(messages: Message[], tools?: Tool[], responseSchema?: z.ZodType<any>): Promise<Message>;
 }
 export interface MemoryAdapter {
     addMessage(sessionId: string, message: Message): Promise<void>;
@@ -36,7 +37,7 @@ export interface Guardrail<T = any> {
     validateOutput?: (output: string) => Promise<boolean | string>;
 }
 export interface RunEvent {
-    type: "run_started" | "text_streamed" | "tool_started" | "tool_completed" | "handoff_started" | "guardrail_triggered" | "run_completed" | "run_failed";
+    type: "run_started" | "text_streamed" | "tool_started" | "tool_requires_approval" | "tool_completed" | "handoff_started" | "guardrail_triggered" | "run_completed" | "run_failed";
     data?: any;
     timestamp: number;
 }
@@ -47,6 +48,10 @@ export interface AgentConfig {
     tools?: Tool[];
     guardrails?: Guardrail[];
     memory?: MemoryAdapter;
+    responseSchema?: z.ZodType<any>;
+    maxRetries?: number;
+    timeoutMs?: number;
+    approveTool?: (toolName: string, args: any) => Promise<boolean> | boolean;
 }
 export interface HandoffRequest {
     newAgent: AgentConfig;
@@ -56,4 +61,7 @@ export declare class HandoffError extends Error {
     handoffAgent: AgentConfig;
     context: string;
     constructor(handoffAgent: AgentConfig, context: string);
+}
+export declare class ApprovalError extends Error {
+    constructor(toolName: string);
 }
