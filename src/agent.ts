@@ -1,5 +1,5 @@
 import { EventEmitter } from "events";
-import { AgentConfig, Message, RunEvent, HandoffError, HandoffRequest, ToolCall } from "./types";
+import { AgentConfig, Message, RunEvent, HandoffError, ApprovalError } from "./types";
 import { runInputGuardrails, runOutputGuardrails } from "./guardrails";
 
 export class Agent extends EventEmitter {
@@ -12,6 +12,26 @@ export class Agent extends EventEmitter {
 
   private emitEvent(event: RunEvent) {
     this.emit(event.type, event.data);
+  }
+
+  private async withRetry<T>(fn: () => Promise<T>): Promise<T> {
+    const maxRetries = this.config.maxRetries ?? 3;
+    const timeoutMs = this.config.timeoutMs ?? 30000;
+    
+    let attempt = 0;
+    while (attempt <= maxRetries) {
+      try {
+        const timeoutPromise = new Promise<never>((_, reject) => 
+          setTimeout(() => reject(new Error("Provider call timed out")), timeoutMs)
+        );
+        return await Promise.race([fn(), timeoutPromise]);
+      } catch (e: any) {
+        attempt++;
+        if (attempt > maxRetries) throw e;
+        await new Promise(r => setTimeout(r, 1000 * Math.pow(2, attempt))); // Exponential backoff
+      }
+    }
+    throw new Error("Max retries exceeded");
   }
 
   async run(input: string, sessionId: string = "default"): Promise<string> {
@@ -52,8 +72,11 @@ export class Agent extends EventEmitter {
       while (iterations < maxIterations) {
         iterations++;
         
-        // Call LLM
-        const responseMessage = await this.config.provider.generate(messages, this.config.tools);
+        // Call LLM with Retries & Timeouts & Structured Outputs
+        const responseMessage = await this.withRetry(() => 
+          this.config.provider.generate(messages, this.config.tools, this.config.responseSchema)
+        );
+        
         messages.push(responseMessage);
         if (this.config.memory) await this.config.memory.addMessage(sessionId, responseMessage);
 
@@ -76,6 +99,18 @@ export class Agent extends EventEmitter {
                 const args = JSON.parse(toolCall.function.arguments);
                 const parsedArgs = tool.schema.parse(args); // Zod validation
                 
+                // Tool Approval Guardrail
+                if (tool.requiresApproval) {
+                  this.emitEvent({ type: "tool_requires_approval", data: { tool: tool.name, args: parsedArgs }, timestamp: Date.now() });
+                  if (!this.config.approveTool) {
+                    throw new ApprovalError(tool.name);
+                  }
+                  const isApproved = await this.config.approveTool(tool.name, parsedArgs);
+                  if (!isApproved) {
+                    throw new ApprovalError(tool.name);
+                  }
+                }
+
                 const result = await tool.execute(parsedArgs);
                 toolResultStr = typeof result === "string" ? result : JSON.stringify(result);
               } catch (e: any) {
@@ -99,7 +134,7 @@ export class Agent extends EventEmitter {
             if (this.config.memory) await this.config.memory.addMessage(sessionId, toolMessage);
           }
         } else {
-          // No tool calls, we reached a final answer
+          // No tool calls, final answer produced
           const finalOutput = responseMessage.content || "";
 
           // 5. Output Guardrails

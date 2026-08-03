@@ -1,5 +1,6 @@
 import OpenAI from "openai";
-import { zodFunction } from "openai/helpers/zod";
+import { zodFunction, zodResponseFormat } from "openai/helpers/zod";
+import { z } from "zod";
 import { ModelProvider, Message, Tool } from "../types";
 
 export class OpenAIProvider implements ModelProvider {
@@ -12,7 +13,7 @@ export class OpenAIProvider implements ModelProvider {
     this.model = options.model || "gpt-4o-mini";
   }
 
-  async generate(messages: Message[], tools?: Tool[]): Promise<Message> {
+  async generate(messages: Message[], tools?: Tool[], responseSchema?: z.ZodType<any>): Promise<Message> {
     const formattedMessages: OpenAI.Chat.ChatCompletionMessageParam[] = messages.map(msg => {
       if (msg.role === "tool") {
         return {
@@ -52,6 +53,7 @@ export class OpenAIProvider implements ModelProvider {
       model: this.model,
       messages: formattedMessages,
       tools: openaiTools?.length ? openaiTools : undefined,
+      response_format: responseSchema ? zodResponseFormat(responseSchema, "final_answer") : undefined,
     });
 
     const choice = response.choices[0];
