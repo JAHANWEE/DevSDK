@@ -1,18 +1,22 @@
 # DevSDK
 
+[![NPM Version](https://img.shields.io/npm/v/devsdk-core.svg)](https://www.npmjs.com/package/devsdk-core)
+
 DevSDK is an open-source AI Agent framework written in TypeScript. Build powerful multi-agent systems with type-safe tools, multi-turn sessions, streaming, and full guardrails support.
+
+**This project is officially published and available as an NPM package at [`devsdk-core`](https://www.npmjs.com/package/devsdk-core).**
 
 ## Installation
 
 ```bash
-npm install devsdk openai zod zod-to-json-schema
+npm install devsdk-core openai zod
 ```
 
 ## Quick Start
 
 ```typescript
 import { z } from "zod";
-import { Agent, OpenAIProvider, createTool } from "devsdk";
+import { Agent, OpenAIProvider, createTool } from "devsdk-core";
 
 const provider = new OpenAIProvider({ apiKey: "YOUR_API_KEY" });
 
@@ -50,7 +54,7 @@ Define agents with specialized instructions, memory adapters, and tools. Tools a
 Agents can request a handoff by throwing a `HandoffError`. DevSDK will catch this in the outer loop or you can handle it directly.
 
 ```typescript
-import { HandoffError } from "devsdk";
+import { HandoffError } from "devsdk-core";
 
 const escalateTool = createTool(
   "escalate_to_human",
