@@ -1,8 +1,22 @@
-# devsdk-core
+# DevSDK
 
-A lean, reliable TypeScript framework for building LLM agents. 
+[![NPM Package](https://img.shields.io/npm/v/devsdk-core.svg)](https://www.npmjs.com/package/devsdk-core)
+[![Documentation](https://img.shields.io/badge/docs-live-brightgreen.svg)](https://dev-sdk.vercel.app/)
 
-Unlike heavy orchestrators, `devsdk-core` gives you low-level primitives for agents, tools, memory, and swarms without getting in your way. It focuses on production reliability: retries, timeouts, strict schema validation, and human-in-the-loop approvals.
+A lightweight TypeScript framework for building and orchestrating LLM agents. It provides native support for swarms, structured outputs, and human-in-the-loop guardrails without enforcing heavy abstractions.
+
+**[Read the Full Documentation](https://dev-sdk.vercel.app/)**
+**[View on NPM](https://www.npmjs.com/package/devsdk-core)**
+
+---
+
+## Features
+
+- **Multi-Agent Swarms:** Safely transfer context between specialized agents using native error boundaries.
+- **Structured Outputs:** Enforce strict JSON responses natively using Zod schemas.
+- **Reliable by Default:** Built-in exponential backoff and timeout handling for provider calls.
+- **Tool Guardrails:** Pause execution and require human approval for sensitive actions.
+- **Granular Tracing:** Subscribe to lifecycle events for logging and streaming.
 
 ## Installation
 
@@ -29,65 +43,48 @@ const agent = new Agent({
   name: "WeatherBot",
   instructions: "You are a helpful weather assistant.",
   provider,
-  tools: [getWeather],
-  responseSchema: z.object({ summary: z.string() }) // Enforces structured JSON output
+  tools: [getWeather]
 });
 
 async function main() {
-  const result = await agent.run("What is the weather in SF?");
-  console.log(result); // Guaranteed to match responseSchema
+  const answer = await agent.run("What is the weather in San Francisco?");
+  console.log(answer); 
 }
+
 main();
 ```
 
-## Core Concepts
+## Architecture
 
-### Multi-Agent Swarms
-Build specialized agents and orchestrate handoffs using `Swarm`.
+DevSDK is designed to be completely modular. You can mix and match providers, memory adapters, and tools.
 
-```typescript
-import { Swarm, HandoffError } from "devsdk-core";
-
-const escalateTool = createTool(
-  "escalate", 
-  "Transfer to support", 
-  z.object({ reason: z.string() }),
-  async ({ reason }) => { throw new HandoffError(supportAgentConfig, reason); }
-);
-
-// Swarm catches HandoffErrors, transfers context, and prevents infinite loops.
-const swarm = new Swarm(triageAgent, 3);
-await swarm.run("My computer is broken!");
+```mermaid
+graph TD
+    A[Agent] -->|Generate Request| P[ModelProvider]
+    A -->|Validate Input/Output| G[Guardrails]
+    A -->|Store Context| M[MemoryAdapter]
+    P -.->|Requires Tool| T[Tools]
+    T -.->|HandoffError| S[Swarm Orchestrator]
 ```
 
-### Human-in-the-Loop (Tool Approvals)
-Require explicit approval before executing sensitive tools.
+## Examples
 
-```typescript
-const agent = new Agent({
-  // ...
-  approveTool: async (toolName, args) => {
-    console.log(`Agent wants to run ${toolName} with`, args);
-    return true; // Return false to block execution and throw ApprovalError
-  }
-});
-```
+We provide ready-to-run examples in the `examples/` directory to help you get started with advanced use cases:
 
-### Memory
-Keep context across turns. Comes with `FileAdapter` and `InMemoryAdapter`.
+- **`structured-output.ts`**: Demonstrates how to strictly enforce Zod JSON schemas for extraction tasks.
+- **`swarm-handoff.ts`**: Demonstrates how to create multiple specialized agents and orchestrate seamless context handoffs between them.
 
-```typescript
-import { FileAdapter } from "devsdk-core";
+## Supported Providers
 
-const memory = new FileAdapter("./memory.json");
-const agent = new Agent({ /* ... */ memory });
-```
+DevSDK uses an abstract `ModelProvider` interface, meaning you can plug in any LLM provider easily.
 
-## Features
-- **Type-safe:** Built on Zod for tool parsing and structured outputs.
-- **Reliable:** Configurable LLM retries and timeouts out-of-the-box.
-- **Event-driven:** Hook into the agent loop with granular events (`tool_started`, `text_streamed`, etc).
-- **Handoffs:** Predictable multi-agent routing using error boundaries.
+| Provider | Status | Package |
+| :--- | :--- | :--- |
+| **OpenAI** | ✅ Built-in | `OpenAIProvider` |
+| **Custom** | ✅ Supported | Implement `ModelProvider` |
 
-## License
-MIT
+---
+<br/>
+<p align="center">
+  made with love ❤️ <b>Jaani</b>
+</p>
